@@ -4,8 +4,12 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class Server implements Runnable {
+
+//    arraylist with all the connections in it
+    private ArrayList<ConnectionHandler> connections;
 
 
     @Override
@@ -19,16 +23,36 @@ public class Server implements Runnable {
 //            server has the accept method which - returns a client socket
             Socket client = server.accept();
 
+//            ConnectionHandler is a class which connects to the server, queues and sends messages to server.
+//            ConnectionHandler also receives messages from server and passes them to clients running on client machine.
+//            need a function to send something from the server to the client - sendMessage function below
+            ConnectionHandler handler = new ConnectionHandler(client);
 
-//            still need a shutdown function here
+            connections.add(handler);
+
+
+
+            //            still need a shutdown function here!!!!
+
+
 
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+//            TODO: handler
         }
 
-
     }
+
+    //        need a broadcast function to broadcast messages to all clients
+    public void broadcastMessage(String message) {
+        for (ConnectionHandler ch: connections) {
+            while(message !=null) {
+                ch.sendMessage(message);
+            }
+        }
+    }
+
+
 
     class ConnectionHandler implements Runnable{
 
@@ -62,13 +86,30 @@ public class Server implements Runnable {
                 nickname = in.readLine();
 
 //                can perform checks on the nickname entered here ...
-                
+
+                System.out.println(nickname + " connected!");
+                broadcastMessage(nickname + " connected...");
+
+//              broadcast this to all the other clients who are connected
+
+//                message will be null by default
+                String message;
+                while((message = in.readLine()) !=null) {
+                    if(message.startsWith("/nick ")) {
+//                        TODO: handle nickname change
+                    }
+                }
 
 
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
 
+
+        }
+
+        public void sendMessage(String message){
+            out.println(message);
 
         }
     }
