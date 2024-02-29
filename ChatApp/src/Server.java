@@ -10,7 +10,15 @@ public class Server implements Runnable {
 
 //    arraylist with all the connections in it
     private ArrayList<ConnectionHandler> connections;
+    private ServerSocket server;
+    private boolean done;
 
+    public Server() {
+        connections = new ArrayList<>();
+
+//        initialise boolean value for whether server is running or not
+        done = false;
+    }
 
     @Override
     public void run() {
@@ -18,7 +26,9 @@ public class Server implements Runnable {
 //        server will constantly listen for incoming connections and then accept them
 
         try {
-            ServerSocket server = new ServerSocket(9999);
+            server = new ServerSocket(9999);
+
+            while(!done) {
 
 //            server has the accept method which - returns a client socket
             Socket client = server.accept();
@@ -30,6 +40,7 @@ public class Server implements Runnable {
 
             connections.add(handler);
 
+            }
 
 
             //            still need a shutdown function here!!!!
@@ -52,6 +63,13 @@ public class Server implements Runnable {
         }
     }
 
+    public void shutdown() throws IOException {
+        done = true;
+        if(!server.isClosed()) {
+            server.close();
+        }
+    }
+
 
 
     class ConnectionHandler implements Runnable{
@@ -65,6 +83,7 @@ public class Server implements Runnable {
         private PrintWriter out;
 
         private String nickname;
+
 
 //        create constructor which takes in the socket as a parameter
         public ConnectionHandler(Socket client) {
@@ -96,7 +115,20 @@ public class Server implements Runnable {
                 String message;
                 while((message = in.readLine()) !=null) {
                     if(message.startsWith("/nick ")) {
-//                        TODO: handle nickname change
+//                        Handle nickname change
+                        String[] messageSplit = message.split(" ", 2);
+                        if (messageSplit.length ==2) {
+                            broadcastMessage(nickname + " changed their handle to " + messageSplit[1]);
+                            System.out.println(nickname + " changed their handle to " + messageSplit[1]);
+                            nickname = messageSplit[1];
+                            out.println("Successfully changed nickname to " + nickname);
+                        } else{
+                            out.println("No nickname provided!");
+                        }
+                    } else if (message.startsWith("/quit")) {
+//                        TODO: quit
+                    } else {
+                        broadcastMessage(nickname + ": " + message);
                     }
                 }
 
