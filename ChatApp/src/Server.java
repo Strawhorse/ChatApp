@@ -5,6 +5,8 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server implements Runnable {
 
@@ -12,6 +14,10 @@ public class Server implements Runnable {
     private ArrayList<ConnectionHandler> connections;
     private ServerSocket server;
     private boolean done;
+
+//    need to define a thread pool that can be reused instead of always having to create new threads
+    private ExecutorService pool;
+
 
     public Server() {
         connections = new ArrayList<>();
@@ -28,28 +34,29 @@ public class Server implements Runnable {
         try {
             server = new ServerSocket(9999);
 
+            pool = Executors.newCachedThreadPool();
+
             while(!done) {
+    //            server has the accept method which - returns a client socket
+                Socket client = server.accept();
 
-//            server has the accept method which - returns a client socket
-            Socket client = server.accept();
+    //            ConnectionHandler is a class which connects to the server, queues and sends messages to server.
+    //            ConnectionHandler also receives messages from server and passes them to clients running on client machine.
+    //            need a function to send something from the server to the client - sendMessage function below
+                ConnectionHandler handler = new ConnectionHandler(client);
 
-//            ConnectionHandler is a class which connects to the server, queues and sends messages to server.
-//            ConnectionHandler also receives messages from server and passes them to clients running on client machine.
-//            need a function to send something from the server to the client - sendMessage function below
-            ConnectionHandler handler = new ConnectionHandler(client);
+                connections.add(handler);
 
-            connections.add(handler);
+//                run the executor - runs the run function
+                pool.execute(handler);
 
             }
-
-
-            //            still need a shutdown function here!!!!
-
-
-
-
         } catch (IOException e) {
-//            TODO: handler
+            try {
+                shutdown();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
         }
 
     }
@@ -57,7 +64,7 @@ public class Server implements Runnable {
     //        need a broadcast function to broadcast messages to all clients
     public void broadcastMessage(String message) {
         for (ConnectionHandler ch: connections) {
-            while(message !=null) {
+            while(ch !=null) {
                 ch.sendMessage(message);
             }
         }
@@ -67,6 +74,10 @@ public class Server implements Runnable {
         done = true;
         if(!server.isClosed()) {
             server.close();
+        }
+        for(ConnectionHandler ch: connections){
+            ch.shutdown();
+//            shut down each connection
         }
     }
 
@@ -126,7 +137,8 @@ public class Server implements Runnable {
                             out.println("No nickname provided!");
                         }
                     } else if (message.startsWith("/quit")) {
-//                        TODO: quit
+                        broadcastMessage(nickname + " left the chat.");
+                        shutdown();
                     } else {
                         broadcastMessage(nickname + ": " + message);
                     }
@@ -134,10 +146,24 @@ public class Server implements Runnable {
 
 
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                try {
+                    shutdown();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
             }
 
 
+        }
+
+        public void shutdown() throws IOException {
+//            firstly close the streams
+            in.close();
+            out.close();
+
+            if(!client.isClosed()){
+                client.close();
+            }
         }
 
         public void sendMessage(String message){
