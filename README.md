@@ -16,3 +16,5 @@ https://medium.com/javarevisited/a-complete-guide-on-executorservice-in-java-675
 
 Server can be run from command line using: javac Server.java
 
+Need to resolve issue when trying to run client from the command line:
+![img.png](img.png)

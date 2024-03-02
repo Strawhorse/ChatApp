@@ -23,7 +23,7 @@ public class Client implements Runnable{
 //            If locally, can use private IP address
 //            If your computer, localhost
 
-            Socket client = new Socket("127.0.0.1", 9999);
+            client = new Socket("127.0.0.1", 9999);
             out = new PrintWriter(client.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
@@ -82,11 +82,15 @@ public class Client implements Runnable{
                     } catch (IOException e) {
                         shutdown();
                     }
-
                 }
             }
-
         }
 
+
+    public static void main(String[] args) {
+        Client client = new Client();
+        client.run();
+    }
 }
+
 

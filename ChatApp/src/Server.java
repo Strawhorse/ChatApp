@@ -72,6 +72,7 @@ public class Server implements Runnable {
 
     public void shutdown() throws IOException {
         done = true;
+        pool.shutdown();
         if(!server.isClosed()) {
             server.close();
         }
@@ -170,5 +171,11 @@ public class Server implements Runnable {
             out.println(message);
 
         }
+    }
+
+
+    public static void main(String[] args) {
+        Server server = new Server();
+        server.run();
     }
 }
