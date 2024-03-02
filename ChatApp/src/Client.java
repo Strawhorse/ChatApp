@@ -33,12 +33,10 @@ public class Client implements Runnable{
         }
 
 
-//        shutdown method
-        
-
 
 
         class InputHandler implements Runnable {
+
 
             //            constantly ask for new input line
 
@@ -62,6 +60,23 @@ public class Client implements Runnable{
                     }
 
                 }
+            }
+
+
+
+            //        shutdown method
+            public void shutdown(){
+                done = true;
+                try{
+                    in.close();
+                    out.close();
+                    if(!client.isClosed()){
+                        client.close();
+                    }
+                } catch(IOException e){
+//                ignore exception here...
+                }
+
             }
         }
 
