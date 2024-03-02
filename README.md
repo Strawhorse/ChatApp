@@ -14,3 +14,5 @@ Server mostly finished; using an Executor framework: provides a way to separate 
 "The framework includes several key components, including the Executor, ExecutorService, ScheduledExecutorService, and ThreadPoolExecutor. These components enable developers to control the number of threads, manage task priorities, and handle exceptions and timeouts."
 https://medium.com/javarevisited/a-complete-guide-on-executorservice-in-java-67528f1a535b#:~:text=The%20Executor%20Framework%20is%20a,logic%20rather%20than%20thread%20management.
 
+Server can be run from command line using: javac Server.java
+
