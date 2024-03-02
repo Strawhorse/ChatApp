@@ -12,6 +12,7 @@ public class Client implements Runnable{
     private Socket client;
     private BufferedReader in;
     private PrintWriter out;
+    private boolean done;
 
 
     @Override
@@ -27,12 +28,43 @@ public class Client implements Runnable{
             out = new PrintWriter(client.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
-            
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+        }
 
 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+//        shutdown method
+        
+
+
+
+        class InputHandler implements Runnable {
+
+            //            constantly ask for new input line
+
+            @Override
+            public void run() {
+
+//                accepts command line input
+                BufferedReader inReader = new BufferedReader(new InputStreamReader(System.in));
+
+                while (!done) {
+                    try {
+                        String message = inReader.readLine();
+                        if(message.equals("/quit:")) {
+                            inReader.close();
+//                            call shutdown function
+                            shutdown();
+                        }
+
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                }
+            }
         }
 
     }
+
 }
